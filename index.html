@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Budget Planner</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <div class="app">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 6v6l4 2"/>
+          </svg>
+          <span>Budget Planner</span>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <button class="nav-item active" data-page="dashboard">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+            <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+          </svg>
+          Dashboard
+        </button>
+        <button class="nav-item" data-page="transactions">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/>
+            <line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/>
+            <line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
+          </svg>
+          Transactions
+        </button>
+        <button class="nav-item" data-page="budgets">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+          </svg>
+          Budgets
+        </button>
+        <button class="nav-item" data-page="reports">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/>
+            <line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/>
+          </svg>
+          Reports
+        </button>
+      </nav>
+      <div class="sidebar-month">
+        <label>Viewing Month</label>
+        <input type="month" id="monthPicker" />
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main">
+      <!-- Dashboard Page -->
+      <section id="page-dashboard" class="page active">
+        <div class="page-header">
+          <h1>Dashboard</h1>
+          <button class="btn btn-primary" id="openAddTransaction">+ Add Transaction</button>
+        </div>
+
+        <div class="summary-cards">
+          <div class="card card--income">
+            <div class="card-label">Total Income</div>
+            <div class="card-value" id="totalIncome">$0.00</div>
+            <div class="card-sub" id="incomeCount">0 transactions</div>
+          </div>
+          <div class="card card--expense">
+            <div class="card-label">Total Expenses</div>
+            <div class="card-value" id="totalExpenses">$0.00</div>
+            <div class="card-sub" id="expenseCount">0 transactions</div>
+          </div>
+          <div class="card card--balance">
+            <div class="card-label">Balance</div>
+            <div class="card-value" id="balance">$0.00</div>
+            <div class="card-sub" id="savingsRate">Savings rate: 0%</div>
+          </div>
+        </div>
+
+        <div class="dashboard-grid">
+          <div class="panel">
+            <div class="panel-header">
+              <h2>Spending by Category</h2>
+            </div>
+            <div class="chart-container">
+              <canvas id="categoryChart"></canvas>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <h2>Budget Progress</h2>
+            </div>
+            <div id="budgetProgressList" class="budget-progress-list">
+              <p class="empty-state">No budgets set. Go to Budgets to add one.</p>
+            </div>
+          </div>
+
+          <div class="panel panel--wide">
+            <div class="panel-header">
+              <h2>Recent Transactions</h2>
+              <button class="btn btn-ghost" data-page="transactions">View all</button>
+            </div>
+            <div id="recentTransactions" class="transaction-list">
+              <p class="empty-state">No transactions yet. Add one to get started.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Transactions Page -->
+      <section id="page-transactions" class="page">
+        <div class="page-header">
+          <h1>Transactions</h1>
+          <button class="btn btn-primary" id="openAddTransaction2">+ Add Transaction</button>
+        </div>
+
+        <div class="filter-bar">
+          <input type="text" id="searchInput" placeholder="Search transactions..." class="input" />
+          <select id="filterType" class="input">
+            <option value="all">All Types</option>
+            <option value="income">Income</option>
+            <option value="expense">Expense</option>
+          </select>
+          <select id="filterCategory" class="input">
+            <option value="all">All Categories</option>
+          </select>
+        </div>
+
+        <div id="allTransactions" class="transaction-list">
+          <p class="empty-state">No transactions yet.</p>
+        </div>
+      </section>
+
+      <!-- Budgets Page -->
+      <section id="page-budgets" class="page">
+        <div class="page-header">
+          <h1>Budgets</h1>
+          <button class="btn btn-primary" id="openAddBudget">+ Add Budget</button>
+        </div>
+        <div id="budgetsList" class="budgets-grid">
+          <p class="empty-state">No budgets set yet.</p>
+        </div>
+      </section>
+
+      <!-- Reports Page -->
+      <section id="page-reports" class="page">
+        <div class="page-header">
+          <h1>Reports</h1>
+        </div>
+        <div class="reports-grid">
+          <div class="panel panel--wide">
+            <div class="panel-header"><h2>Monthly Cash Flow</h2></div>
+            <div class="chart-container chart-container--tall">
+              <canvas id="cashFlowChart"></canvas>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-header"><h2>Expense Breakdown</h2></div>
+            <div class="chart-container">
+              <canvas id="expenseBreakdownChart"></canvas>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-header"><h2>Top Spending Categories</h2></div>
+            <div id="topCategories" class="top-categories-list"></div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Transaction Modal -->
+  <div class="modal-overlay" id="transactionModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="transactionModalTitle">Add Transaction</h2>
+        <button class="modal-close" id="closeTransactionModal">&times;</button>
+      </div>
+      <form id="transactionForm" class="modal-body">
+        <input type="hidden" id="transactionId" />
+        <div class="form-group">
+          <label>Type</label>
+          <div class="radio-group">
+            <label class="radio-label">
+              <input type="radio" name="type" value="expense" checked /> Expense
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="type" value="income" /> Income
+            </label>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="txAmount">Amount</label>
+            <input type="number" id="txAmount" class="input" placeholder="0.00" min="0" step="0.01" required />
+          </div>
+          <div class="form-group">
+            <label for="txDate">Date</label>
+            <input type="date" id="txDate" class="input" required />
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="txCategory">Category</label>
+          <select id="txCategory" class="input" required></select>
+        </div>
+        <div class="form-group">
+          <label for="txDescription">Description</label>
+          <input type="text" id="txDescription" class="input" placeholder="What was this for?" required />
+        </div>
+        <div class="form-group">
+          <label for="txNotes">Notes (optional)</label>
+          <textarea id="txNotes" class="input" rows="2" placeholder="Additional details..."></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-ghost" id="cancelTransaction">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="saveTransactionBtn">Save Transaction</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Budget Modal -->
+  <div class="modal-overlay" id="budgetModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="budgetModalTitle">Add Budget</h2>
+        <button class="modal-close" id="closeBudgetModal">&times;</button>
+      </div>
+      <form id="budgetForm" class="modal-body">
+        <input type="hidden" id="budgetId" />
+        <div class="form-group">
+          <label for="budgetCategory">Category</label>
+          <select id="budgetCategory" class="input" required></select>
+        </div>
+        <div class="form-group">
+          <label for="budgetAmount">Monthly Limit</label>
+          <input type="number" id="budgetAmount" class="input" placeholder="0.00" min="0" step="0.01" required />
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-ghost" id="cancelBudget">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Budget</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Delete Confirm Modal -->
+  <div class="modal-overlay" id="deleteModal">
+    <div class="modal modal--sm">
+      <div class="modal-header">
+        <h2>Confirm Delete</h2>
+        <button class="modal-close" id="closeDeleteModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p id="deleteMessage">Are you sure you want to delete this item?</p>
+        <div class="modal-footer">
+          <button class="btn btn-ghost" id="cancelDelete">Cancel</button>
+          <button class="btn btn-danger" id="confirmDelete">Delete</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
