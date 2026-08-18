@@ -109,6 +109,22 @@ Running it on your own machine instead:
 Local cron uses your machine's clock, so `21` is already Jakarta time if the
 machine is set to WIB. No conversion needed, unlike the GitHub Actions cron.
 
+## Running it inside Farell AI Workspace
+
+Set the workspace root and a relative output directory, and reports land at
+absolute paths under the workspace with dated, slugged filenames
+(`2026-08-18-buffett.md`) so several agents can share one outputs folder:
+
+```bash
+export FARELL_WS="/Users/tanubrataf/Farell AI Workspace"
+python -m buffett.run --output-dir "investing/outputs"
+```
+
+`WORKSPACE-MIGRATION.md` is the handoff brief for folding this into the
+workspace properly. Read it there rather than following it from here: it was
+written from a session that could not see the workspace, so it defers to
+`WS/CLAUDE.md` on every structural question.
+
 ## Environment variables
 
 Only `SEC_USER_AGENT` is genuinely required. Everything else degrades quietly:
@@ -122,6 +138,7 @@ no Telegram token means it writes files without pushing.
 | `PORTFOLIO_EQUITY_USD` | Overrides `portfolio.equity_usd` so your real position size never sits in a committed file. |
 | `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` | Nightly push to your phone. Message `@BotFather` to create a bot, send it one message, then read the chat id from `getUpdates`. |
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `REPORT_EMAIL_TO` | Emails the full HTML brief. Port 587 uses STARTTLS, anything else uses SSL. |
+| `FARELL_WS` | Workspace root. A relative `--output-dir` resolves against it, so the run never depends on the working directory. |
 | `BUFFETT_MODEL` | Override the memo model. Defaults to `claude-opus-5`. |
 | `BUFFETT_DISABLE_AGENT=1` | Skip the memo without removing the key. |
 
@@ -263,7 +280,7 @@ pip install pytest
 python -m pytest tests/ -q
 ```
 
-105 tests, no network required. They cover the EDGAR parser against
+150 tests, no network required. They cover the EDGAR parser against
 restatements, concept migration and 53-week fiscal years; every forensic score
 against hand-computed values; the DCF against an independent recomputation;
 Kelly's optimality property; the gates; the schedule arithmetic; and one full

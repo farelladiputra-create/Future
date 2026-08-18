@@ -106,7 +106,16 @@ enabled = true
 [report]
 top_n = 5
 watchlist_n = 12
+# Where reports land. A relative path resolves against workspace_root, so the
+# job never depends on the directory it was launched from.
 output_dir = "reports"
+# Absolute workspace root. Set it here, or via the FARELL_WS environment
+# variable, which wins. Inside the workspace this should be the workspace root
+# and output_dir becomes something like "investing/outputs".
+# workspace_root = "/Users/tanubrataf/Farell AI Workspace"
+# Filenames are YYYY-MM-DD-{slug}.{ext}, so several agents can share one
+# outputs folder without colliding.
+slug = "buffett"
 write_html = true
 write_markdown = true
 write_json = true

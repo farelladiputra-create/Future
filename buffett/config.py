@@ -149,7 +149,15 @@ class AgentConfig:
 class ReportConfig:
     top_n: int = 5
     watchlist_n: int = 12
+    # Where reports land. Relative paths resolve against `workspace_root` when
+    # one is set, so the job never depends on the directory it was launched from.
     output_dir: str = "reports"
+    # Absolute workspace root. Set via the FARELL_WS environment variable, or
+    # here. Left unset, output_dir resolves against the current directory.
+    workspace_root: str | None = None
+    # Distinguishes these reports from other agents writing dated files into the
+    # same outputs folder: YYYY-MM-DD-{slug}.{ext}
+    slug: str = "buffett"
     write_html: bool = True
     write_markdown: bool = True
     write_json: bool = True
@@ -217,6 +225,8 @@ def load_config(path: str | Path | None = None) -> Config:
         cfg.data.sec_user_agent = ua
     if equity := os.environ.get("PORTFOLIO_EQUITY_USD"):
         cfg.portfolio.equity_usd = float(equity)
+    if workspace := os.environ.get("FARELL_WS"):
+        cfg.report.workspace_root = workspace
     if model := os.environ.get("BUFFETT_MODEL"):
         cfg.agent.model = model
     if os.environ.get("BUFFETT_DISABLE_AGENT") == "1":

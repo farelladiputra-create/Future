@@ -168,12 +168,27 @@ def _prepare(cfg: Config, args: argparse.Namespace) -> tuple[Any, list[str]]:
     return client, tickers
 
 
+def resolve_output_dir(cfg: Config) -> Path:
+    """Absolute output directory.
+
+    The workspace convention is that paths are built from the workspace root and
+    the working directory is never assumed, so a relative `output_dir` is joined
+    onto `workspace_root` when one is configured. An absolute `output_dir` wins
+    outright, which is what pathlib does when joining onto one.
+    """
+    base = Path(cfg.report.output_dir).expanduser()
+    root = cfg.report.workspace_root
+    if root:
+        base = Path(root).expanduser() / base
+    return base.resolve()
+
+
 def _write_reports(
     result: ScreenResult, memo: Memo, cfg: Config, run_at: date
 ) -> list[Path]:
-    output_dir = Path(cfg.report.output_dir)
+    output_dir = resolve_output_dir(cfg)
     output_dir.mkdir(parents=True, exist_ok=True)
-    stem = run_at.isoformat()
+    stem = f"{run_at.isoformat()}-{cfg.report.slug}"
     written: list[Path] = []
 
     if cfg.report.write_markdown:
@@ -185,8 +200,9 @@ def _write_reports(
         path = output_dir / f"{stem}.html"
         path.write_text(html_report.render(result, memo, cfg, run_at), encoding="utf-8")
         written.append(path)
-        # A stable filename makes bookmarking the latest brief possible.
-        latest = output_dir / "latest.html"
+        # A stable filename makes bookmarking the latest brief possible. It
+        # carries the slug too, so several agents can share an outputs folder.
+        latest = output_dir / f"latest-{cfg.report.slug}.html"
         latest.write_text(path.read_text(encoding="utf-8"), encoding="utf-8")
         written.append(latest)
 
