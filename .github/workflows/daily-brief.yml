@@ -1,0 +1,101 @@
+name: Daily value brief
+
+# 21:00 Asia/Jakarta is 14:00 UTC (Jakarta is UTC+7 year round, no DST).
+#
+# Tuesday through Saturday, not Monday to Friday. At 21:00 JKT the most recent
+# completed US session is the previous calendar day's: the New York close lands
+# at 20:00 or 21:00 UTC depending on daylight saving, which is after the 14:00
+# UTC run on the same day. So a Tuesday run reads Monday's close, a Saturday run
+# reads Friday's close, and a Monday run would only ever re-read Friday's,
+# already covered by Saturday.
+on:
+  schedule:
+    - cron: "0 14 * * 2-6"
+  workflow_dispatch:
+    inputs:
+      tickers:
+        description: "Comma-separated symbols to screen instead of the full universe"
+        required: false
+      offline:
+        description: "Run against synthetic filers (no network)"
+        type: boolean
+        default: false
+
+# A long screen must never overlap with the next scheduled run.
+concurrency:
+  group: daily-brief
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  brief:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      # Fundamentals change quarterly, so caching EDGAR responses turns a
+      # several-hundred-request screen into a handful of price fetches. The key
+      # rotates weekly so the cache cannot grow without bound.
+      - name: Restore data cache
+        uses: actions/cache@v4
+        with:
+          path: .cache
+          key: edgar-${{ runner.os }}-${{ github.run_id }}
+          restore-keys: |
+            edgar-${{ runner.os }}-
+
+      - name: Run the screen
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          SEC_USER_AGENT: ${{ secrets.SEC_USER_AGENT }}
+          PORTFOLIO_EQUITY_USD: ${{ secrets.PORTFOLIO_EQUITY_USD }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          REPORT_EMAIL_TO: ${{ secrets.REPORT_EMAIL_TO }}
+          REPORT_EMAIL_FROM: ${{ secrets.REPORT_EMAIL_FROM }}
+        run: |
+          ARGS=""
+          if [ -n "${{ github.event.inputs.tickers }}" ]; then
+            ARGS="$ARGS --tickers ${{ github.event.inputs.tickers }}"
+          fi
+          if [ "${{ github.event.inputs.offline }}" = "true" ]; then
+            ARGS="$ARGS --offline"
+          fi
+          python -m buffett.run $ARGS
+
+      - name: Commit the report
+        run: |
+          git config user.name "buffett-agent"
+          git config user.email "buffett-agent@users.noreply.github.com"
+          git add reports
+          if git diff --staged --quiet; then
+            echo "no report changes to commit"
+          else
+            git commit -m "reports: brief for $(date -u +%Y-%m-%d) [skip ci]"
+            git push
+          fi
+
+      - name: Upload the brief as an artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: brief-${{ github.run_id }}
+          path: reports/
+          if-no-files-found: warn
+          retention-days: 30

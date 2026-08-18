@@ -1,0 +1,13 @@
+# Cached EDGAR and price responses. Regenerated on demand; never worth committing.
+.cache/
+
+# Local overrides that may hold personal portfolio numbers.
+config.local.toml
+.env
+
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+*.egg-info/
