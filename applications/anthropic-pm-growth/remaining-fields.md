@@ -2,15 +2,15 @@
 
 ## Additional Information
 
-Two things my CV does not show clearly.
+Two things my CV does not show.
 
-Scale: DANA Siaga sells around 100M insurance policies a month. I am the sole PM on it, working with a squad of 8. At Blibli I was 1 of 2 PMs on BRS, our in-house recommendation system, which served the full Blibli user base, working across 10 to 12 backend engineers.
+Scale. DANA Siaga sells around 100M insurance policies a month. I am the sole PM on it, with a squad of 8. At Blibli I was 1 of 2 PMs on BRS, our in-house recommendation system. It served the full Blibli user base, and I worked across 10 to 12 backend engineers.
 
-Logistics: I am an Indonesian citizen based in Jakarta and would require visa sponsorship. My notice period is 2 months, and I am open to relocating for this role.
+Logistics. I am Indonesian, based in Jakarta, and would need visa sponsorship. Notice period is 2 months. I am open to relocating for this role.
 
 ## LinkedIn Profile
 
-[Paste your own URL. Required unless the resume upload is already attached.]
+[Paste your own URL.]
 
 ## Are you open to relocation for this role?
 
@@ -26,4 +26,4 @@ No
 
 ## Please read the arbitration agreement below
 
-Your call, not mine. See notes.
+Your call. Read it before you pick.
